@@ -1,0 +1,16 @@
+[flake8]
+# Same as isort's "skip" default https://pycqa.github.io/isort/docs/configuration/options.html#skip
+exclude = .bzr,.direnv,.eggs,.git,.hg,.mypy_cache,.nox,.pants.d,.svn,.tox,.venv,__pypackages__,_build,buck-out,build,dist,node_modules,venv
+
+per-file-ignores =
+    tests/*:
+        # Use of assert detected.
+        S101
+
+max-line-length = 120
+
+# Fix N805, first argument should be self with pydantic validators
+classmethod-decorators =
+  classmethod
+  validator
+  root_validator

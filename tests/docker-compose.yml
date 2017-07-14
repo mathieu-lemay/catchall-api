@@ -1,0 +1,6 @@
+services:
+  api:
+    build: ".."
+    image: "catchall-api:dev"
+    ports:
+      - 8080
