@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "catchall-api"
-version = "1.0.0"
+version = "1.0.1"
 description = "Catchall API that echoes back requests"
 authors = ["Mathieu Lemay <acidrain1@gmail.com>"]
 license = "MIT"
