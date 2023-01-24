@@ -93,7 +93,7 @@ async def test_post_root_json_body(api_client: AsyncClient, api_service_host: st
             "host": api_service_host,
             "user-agent": f"python-httpx/{httpx.__version__}",
         },
-        "body": {"foo": "bar"},
+        "body": {"json": {"foo": "bar"}, "raw": "eyJmb28iOiAiYmFyIn0="},
     }
 
 
@@ -127,5 +127,5 @@ async def test_post_root_non_json_body(
             "host": api_service_host,
             "user-agent": f"python-httpx/{httpx.__version__}",
         },
-        "body": expected,
+        "body": {"raw": expected},
     }

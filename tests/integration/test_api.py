@@ -66,7 +66,7 @@ async def test_post_root_json_body(api_client: TestClient) -> None:
             "host": "testserver",
             "user-agent": "testclient",
         },
-        "body": {"foo": "bar"},
+        "body": {"json": {"foo": "bar"}, "raw": "eyJmb28iOiAiYmFyIn0="},
     }
 
 
@@ -94,5 +94,5 @@ async def test_post_root_non_json_body(api_client: TestClient, data: Union[str, 
             "host": "testserver",
             "user-agent": "testclient",
         },
-        "body": expected,
+        "body": {"raw": expected},
     }
