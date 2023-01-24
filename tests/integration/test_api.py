@@ -23,7 +23,7 @@ async def api_client() -> TestClient:
 )
 async def test_get(api_client: TestClient, path: str, expected_path: str) -> None:
     resp = api_client.get(path)
-    assert resp.ok
+    assert resp.is_success
     assert resp.json() == {
         "path": expected_path,
         "headers": {
@@ -38,7 +38,7 @@ async def test_get(api_client: TestClient, path: str, expected_path: str) -> Non
 
 async def test_get_with_params(api_client: TestClient) -> None:
     resp = api_client.get("/", params={"foo": "bar"})
-    assert resp.ok
+    assert resp.is_success
     assert resp.json() == {
         "path": "/",
         "headers": {
@@ -54,7 +54,7 @@ async def test_get_with_params(api_client: TestClient) -> None:
 
 async def test_post_root_json_body(api_client: TestClient) -> None:
     resp = api_client.post("/", json={"foo": "bar"})
-    assert resp.ok
+    assert resp.is_success
     assert resp.json() == {
         "path": "/",
         "headers": {
@@ -82,8 +82,8 @@ async def test_post_root_json_body(api_client: TestClient) -> None:
     ],
 )
 async def test_post_root_non_json_body(api_client: TestClient, data: Union[str, bytes], expected: str) -> None:
-    resp = api_client.post("/", data=data)
-    assert resp.ok
+    resp = api_client.post("/", content=data)
+    assert resp.is_success
     assert resp.json() == {
         "path": "/",
         "headers": {
