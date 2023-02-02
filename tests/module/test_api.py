@@ -20,7 +20,7 @@ def api_service_url(api_service_host: str, docker_services: Services) -> str:
         try:
             resp = httpx.get(f"{url}")
             resp.raise_for_status()
-        except Exception:
+        except Exception:  # noqa BLE001: Do not catch blind exception: `Exception`
             return False
         else:
             return True

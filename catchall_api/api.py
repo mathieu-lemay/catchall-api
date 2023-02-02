@@ -46,12 +46,12 @@ async def _get_body(request: Request) -> Optional[JsonDict]:
 
     try:
         raw_body = base64.b64encode(await request.body()).decode()
-    except Exception:
+    except Exception:  # noqa BLE001: Do not catch blind exception: `Exception`
         raw_body = None
 
     try:
         json_body = await request.json()
-    except Exception:  # noqa: S110
+    except Exception:  # noqa BLE001: Do not catch blind exception: `Exception`
         json_body = None
 
     if raw_body:
