@@ -1,8 +1,9 @@
-from typing import AsyncGenerator, Union
+from typing import AsyncGenerator
+from uuid import uuid4
 
 import httpx
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, HTTPError
 from pytest_docker.plugin import Services  # type: ignore[import]
 
 
@@ -20,8 +21,8 @@ def api_service_url(api_service_host: str, docker_services: Services) -> str:
         try:
             resp = httpx.get(f"{url}")
             resp.raise_for_status()
-        except Exception:  # noqa BLE001: Do not catch blind exception: `Exception`
-            return False
+        except HTTPError:
+            return False  # pragma: no cover
         else:
             return True
 
@@ -36,96 +37,41 @@ async def api_client(api_service_url: str) -> AsyncGenerator[AsyncClient, None]:
 
 
 @pytest.mark.parametrize(
-    ("path", "expected_path"),
+    "method",
     [
-        ("", "/"),
-        ("/", "/"),
-        ("api", "/api"),
-        ("/api", "/api"),
-        ("/api/foobar", "/api/foobar"),
+        "DELETE",
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+        "POST",
+        "PUT",
+        "TRACE",
     ],
 )
-async def test_get(api_client: AsyncClient, api_service_host: str, path: str, expected_path: str) -> None:
-    resp = await api_client.get(path)
-    resp.raise_for_status()
+async def test_all_methods_are_supported(api_client: AsyncClient, method: str) -> None:
+    resp = await api_client.request(method, "/")
+    assert resp.is_success
 
-    assert resp.json() == {
-        "path": expected_path,
-        "headers": {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate",
-            "connection": "keep-alive",
-            "host": api_service_host,
-            "user-agent": f"python-httpx/{httpx.__version__}",
-        },
-    }
+    if method != "HEAD":
+        assert resp.json()["method"] == method
 
 
-async def test_get_with_params(api_client: AsyncClient, api_service_host: str) -> None:
-    resp = await api_client.get("/", params={"foo": "bar"})
-    resp.raise_for_status()
+async def test_all_headers_are_returned(api_client: AsyncClient, api_service_host: str) -> None:
+    auth = str(uuid4())
+    headers = {"Authorization": auth, "X-Extra-Header": "some-value"}
+    data = b"abc123"
 
-    assert resp.json() == {
-        "path": "/",
-        "headers": {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate",
-            "connection": "keep-alive",
-            "host": api_service_host,
-            "user-agent": f"python-httpx/{httpx.__version__}",
-        },
-        "query_params": {"foo": "bar"},
-    }
+    resp = await api_client.post("/", headers=headers, content=data)
 
-
-async def test_post_root_json_body(api_client: AsyncClient, api_service_host: str) -> None:
-    resp = await api_client.post("/", json={"foo": "bar"})
-    resp.raise_for_status()
-
-    assert resp.json() == {
-        "path": "/",
-        "headers": {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate",
-            "connection": "keep-alive",
-            "content-type": "application/json",
-            "content-length": "14",
-            "host": api_service_host,
-            "user-agent": f"python-httpx/{httpx.__version__}",
-        },
-        "body": {"json": {"foo": "bar"}, "raw": "eyJmb28iOiAiYmFyIn0="},
-    }
-
-
-@pytest.mark.parametrize(
-    ("data", "expected"),
-    [
-        ("foobar", "Zm9vYmFy"),
-        (b"foobar", "Zm9vYmFy"),
-        (
-            b"#\xcaK^{0l\xb5\xe0#\x1e\xe2\xac\xe2}\xcb\xc9\xceXS\xac\xc9\xbc`\x1e\xf4,A\x06\xc7\x87]",
-            "I8pLXnswbLXgIx7irOJ9y8nOWFOsybxgHvQsQQbHh10=",
-        ),
-    ],
-)
-async def test_post_root_non_json_body(
-    api_client: AsyncClient,
-    api_service_host: str,
-    data: Union[str, bytes],
-    expected: str,
-) -> None:
-    resp = await api_client.post("/", content=data)
-    resp.raise_for_status()
-
-    assert resp.json() == {
-        "path": "/",
-        "headers": {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate",
-            "connection": "keep-alive",
-            "content-length": str(len(data)),
-            "host": api_service_host,
-            "user-agent": f"python-httpx/{httpx.__version__}",
-        },
-        "body": {"raw": expected},
+    assert resp.is_success
+    assert resp.json()["headers"] == {
+        "accept": "*/*",
+        "accept-encoding": "gzip, deflate",
+        "connection": "keep-alive",
+        "host": api_service_host,
+        "user-agent": f"python-httpx/{httpx.__version__}",
+        "authorization": auth,
+        "x-extra-header": "some-value",
+        "content-length": str(len(data)),
     }

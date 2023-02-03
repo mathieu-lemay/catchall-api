@@ -11,8 +11,9 @@ class Settings(BaseSettings):
     port: int = 8080
     debug: bool = False
     log_level: str = "INFO"
-    log_to_file: bool = False
     log_no_color: Optional[str] = Field(default=None, env="NO_COLOR")
+    log_to_file: bool = False
+    log_to_file_directory: str = "/output"
 
     class Config:
         env_file = ".env"
