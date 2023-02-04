@@ -186,7 +186,7 @@ async def test_request_data_is_output_to_console_and_file(
     assert f"POST {path}" in caplog.text
     assert json.dumps(expected_response, indent=2, sort_keys=True) in caplog.text
 
-    expected_file_name = f"{datetime.now().isoformat()}-POST--{endpoint}.json"
+    expected_file_name = f"{datetime.utcnow().isoformat()}-POST--{endpoint}.json"
     expected_file = tmp_path / expected_file_name
     if should_write_to_file:
         assert expected_file.exists()

@@ -1,3 +1,5 @@
+from datetime import datetime
+from pathlib import Path
 from typing import AsyncGenerator
 from uuid import uuid4
 
@@ -57,12 +59,19 @@ async def test_all_methods_are_supported(api_client: AsyncClient, method: str) -
         assert resp.json()["method"] == method
 
 
-async def test_all_headers_are_returned(api_client: AsyncClient, api_service_host: str) -> None:
+async def test_all_headers_are_returned(
+    api_client: AsyncClient, api_service_host: str, log_file_directory: Path
+) -> None:
     auth = str(uuid4())
     headers = {"Authorization": auth, "X-Extra-Header": "some-value"}
     data = b"abc123"
 
+    log_files = set(log_file_directory.glob("*.json"))
+    ts_start = datetime.utcnow()
+
     resp = await api_client.post("/", headers=headers, content=data)
+
+    ts_end = datetime.utcnow()
 
     assert resp.is_success
     assert resp.json()["headers"] == {
@@ -75,3 +84,12 @@ async def test_all_headers_are_returned(api_client: AsyncClient, api_service_hos
         "x-extra-header": "some-value",
         "content-length": str(len(data)),
     }
+
+    new_log_files = list(set(log_file_directory.glob("*.json")) - log_files)
+    assert len(new_log_files) == 1
+
+    log_file_name = new_log_files[0].name
+    assert log_file_name.endswith("-POST--.json")
+
+    log_file_timestamp = datetime.fromisoformat(log_file_name.split("-POST-")[0])
+    assert ts_start <= log_file_timestamp <= ts_end

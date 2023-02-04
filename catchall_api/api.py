@@ -88,7 +88,7 @@ def _log_request_data(method: str, path: str, data: JsonDict, log_to_file: bool,
     if not log_to_file:
         return
 
-    log_file = log_file_directory / f"{datetime.now().isoformat()}-{method}{path.replace('/', '--')}.json"
+    log_file = log_file_directory / f"{datetime.utcnow().isoformat()}-{method}{path.replace('/', '--')}.json"
 
     log_file.write_text(serialized_request)
 

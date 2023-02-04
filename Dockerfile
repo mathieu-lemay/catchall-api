@@ -9,7 +9,7 @@ COPY pyproject.toml \
     /app/
 
 RUN set -eu; \
-    poetry install --no-root;
+    poetry install --no-root --without dev;
 
 
 FROM python:3.10-alpine
