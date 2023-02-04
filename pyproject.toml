@@ -43,7 +43,6 @@ show_error_codes=true
 minversion = "6.0"
 # Disable anyio to avoid conflict and force asyncio to load before entrypoints
 # https://docs.pytest.org/en/6.2.x/writing_plugins.html#plugin-discovery-order-at-tool-startup
-# Also force pytest_alembic to load before boostsec_database for fixture overrides
 addopts = ["-p", "no:anyio", "-p", "asyncio"]
 testpaths = ["tests"]
 asyncio_mode = "auto"

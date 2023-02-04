@@ -1,6 +1,9 @@
 DOCKER_IMAGE := "catchall-api"
 DOCKER_TAG := "dev"
 
+run:
+    poetry run ./entrypoint.sh --reload
+
 install:
     poetry install --sync
 

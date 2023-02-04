@@ -4,16 +4,20 @@ import logging
 from collections import Counter
 from datetime import datetime
 from json import JSONDecodeError
+from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 
-from . import settings
+from . import Settings
+from .log import configure_loggers
 
 JsonDict = dict[str, Any]
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
+
+settings_dependency = Depends(lambda: app.state.settings)
 
 
 @app.delete("{path:path}")
@@ -24,7 +28,7 @@ logger = logging.getLogger(__name__)
 @app.post("{path:path}")
 @app.put("{path:path}")
 @app.trace("{path:path}")
-async def root(request: Request, path: str) -> JsonDict:
+async def root(request: Request, path: str, settings: Settings = settings_dependency) -> JsonDict:
     path = path or "/"
 
     request_data = {
@@ -39,7 +43,7 @@ async def root(request: Request, path: str) -> JsonDict:
     if body := await _get_body(request):
         request_data["body"] = body
 
-    _log_request_data(request_data)
+    _log_request_data(request_data, settings.log_to_file, settings.log_file_directory)
 
     return request_data
 
@@ -76,26 +80,21 @@ async def _get_body(request: Request) -> Optional[JsonDict]:
     return body
 
 
-def _log_request_data(request: JsonDict) -> None:
+def _log_request_data(request: JsonDict, log_to_file: bool = True, log_file_directory: Optional[Path] = None) -> None:
     serialized_request = json.dumps(request, indent=2, sort_keys=True)
 
     print(serialized_request)
 
-    if settings.log_to_file:
-        with open(f"/{settings.log_to_file_directory}/{datetime.now().isoformat()}.json", "w") as f:
+    if log_to_file:
+        with open(f"/{log_file_directory}/{datetime.now().isoformat()}.json", "w") as f:
             print(serialized_request, file=f)
 
 
-def main() -> None:
-    import uvicorn
+def create_app(settings: Optional[Settings] = None) -> FastAPI:
+    settings = settings or Settings()
 
-    uvicorn.run(
-        "catchall_api.api:app",
-        host=settings.host,
-        port=settings.port,
-        reload=settings.debug,
-    )
+    app.state.settings = settings
 
+    configure_loggers(settings)
 
-if __name__ == "__main__":
-    main()  # pragma: no cover
+    return app

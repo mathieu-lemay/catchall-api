@@ -8,19 +8,26 @@ import pytest
 import time_machine
 from _pytest.capture import CaptureFixture
 from _pytest.monkeypatch import MonkeyPatch
+from fastapi import FastAPI
 from starlette.testclient import TestClient
 
-from catchall_api.api import app
+from catchall_api import Settings
+from catchall_api.api import create_app
 
 
-@pytest.fixture()
-async def api_client() -> TestClient:
-    return TestClient(app)
+@pytest.fixture(scope="session")
+def api_settings() -> Settings:
+    return Settings()
 
 
-@pytest.fixture()
-def json_output_folder(tmp_path: Path) -> Path:
-    return tmp_path
+@pytest.fixture(scope="session")
+async def api_app(api_settings: Settings) -> FastAPI:
+    return create_app(api_settings)
+
+
+@pytest.fixture(scope="session")
+async def api_client(api_app: FastAPI) -> TestClient:
+    return TestClient(api_app)
 
 
 @pytest.mark.parametrize(
@@ -141,7 +148,19 @@ async def test_empty_body_with_bogus_content_length_is_not_returned(api_client: 
     assert "body" not in resp.json()
 
 
-async def test_request_data_is_printed_to_console(api_client: TestClient, capsys: CaptureFixture[str]) -> None:
+@pytest.mark.parametrize("should_write_to_file", [True, False])
+@time_machine.travel(datetime(2023, 1, 1, 0, 0, 0), tick=False)
+async def test_request_data_is_output_to_console_and_file(
+    api_settings: Settings,
+    api_client: TestClient,
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+    capsys: CaptureFixture[str],
+    should_write_to_file: bool,
+) -> None:
+    monkeypatch.setattr(api_settings, "log_to_file", should_write_to_file)
+    monkeypatch.setattr(api_settings, "log_file_directory", str(tmp_path))
+
     resp = api_client.post("/", json={"foo": "bar"})
 
     assert resp.is_success
@@ -163,35 +182,7 @@ async def test_request_data_is_printed_to_console(api_client: TestClient, capsys
 
     assert json.dumps(expected_response, indent=2, sort_keys=True) in capsys.readouterr().out
 
-
-@pytest.mark.parametrize("should_write_to_file", [True, False])
-@time_machine.travel(datetime(2023, 1, 1, 0, 0, 0), tick=False)
-async def test_request_data_is_written_to_file(
-    api_client: TestClient, json_output_folder: Path, monkeypatch: MonkeyPatch, should_write_to_file: bool
-) -> None:
-    monkeypatch.setattr("catchall_api.api.settings.log_to_file", should_write_to_file)
-    monkeypatch.setattr("catchall_api.api.settings.log_to_file_directory", str(json_output_folder))
-
-    resp = api_client.post("/", json={"foo": "bar"})
-
-    assert resp.is_success
-
-    expected_response = {
-        "body": {"json": {"foo": "bar"}, "raw": "eyJmb28iOiAiYmFyIn0="},
-        "headers": {
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate",
-            "connection": "keep-alive",
-            "content-length": "14",
-            "content-type": "application/json",
-            "host": "testserver",
-            "user-agent": "testclient",
-        },
-        "method": "POST",
-        "path": "/",
-    }
-
-    expected_file = json_output_folder / f"{datetime.now().isoformat()}.json"
+    expected_file = tmp_path / f"{datetime.now().isoformat()}.json"
     if should_write_to_file:
         assert expected_file.exists()
         file_data = json.loads(expected_file.read_text())

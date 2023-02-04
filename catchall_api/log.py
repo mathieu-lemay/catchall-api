@@ -1,9 +1,9 @@
 import logging.config
 
-from . import __project_name__, settings
+from . import Settings, __project_name__
 
 
-def init_logger() -> None:
+def configure_loggers(settings: Settings) -> None:
     log_handler_name = "colored" if not settings.log_no_color else "default"
     log_level = settings.log_level
     logging.config.dictConfig(
