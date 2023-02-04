@@ -9,10 +9,9 @@ def configure_loggers(settings: Settings) -> None:
     logging.config.dictConfig(
         {
             "version": 1,
+            "disable_existing_loggers": True,
             "loggers": {
                 __project_name__: {"handlers": [log_handler_name], "level": log_level},
-                # TODO: Make this work
-                "fastapi": {"handlers": [log_handler_name], "level": log_level},
             },
             "handlers": {
                 "default": {

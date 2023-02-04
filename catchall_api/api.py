@@ -43,7 +43,7 @@ async def root(request: Request, path: str, settings: Settings = settings_depend
     if body := await _get_body(request):
         request_data["body"] = body
 
-    _log_request_data(request_data, settings.log_to_file, settings.log_file_directory)
+    _log_request_data(request.method, path, request_data, settings.log_to_file, settings.log_file_directory)
 
     return request_data
 
@@ -80,14 +80,17 @@ async def _get_body(request: Request) -> Optional[JsonDict]:
     return body
 
 
-def _log_request_data(request: JsonDict, log_to_file: bool = True, log_file_directory: Optional[Path] = None) -> None:
-    serialized_request = json.dumps(request, indent=2, sort_keys=True)
+def _log_request_data(method: str, path: str, data: JsonDict, log_to_file: bool, log_file_directory: Path) -> None:
+    serialized_request = json.dumps(data, indent=2, sort_keys=True)
 
-    print(serialized_request)
+    logger.info("%s %s\n%s", method, path, serialized_request)
 
-    if log_to_file:
-        with open(f"/{log_file_directory}/{datetime.now().isoformat()}.json", "w") as f:
-            print(serialized_request, file=f)
+    if not log_to_file:
+        return
+
+    log_file = log_file_directory / f"{datetime.now().isoformat()}-{method}{path.replace('/', '--')}.json"
+
+    log_file.write_text(serialized_request)
 
 
 def create_app(settings: Optional[Settings] = None) -> FastAPI:

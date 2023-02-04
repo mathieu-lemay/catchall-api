@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 import time_machine
-from _pytest.capture import CaptureFixture
+from _pytest.logging import LogCaptureFixture
 from _pytest.monkeypatch import MonkeyPatch
 from fastapi import FastAPI
 from starlette.testclient import TestClient
@@ -155,13 +155,16 @@ async def test_request_data_is_output_to_console_and_file(
     api_client: TestClient,
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
-    capsys: CaptureFixture[str],
+    caplog: LogCaptureFixture,
     should_write_to_file: bool,
 ) -> None:
     monkeypatch.setattr(api_settings, "log_to_file", should_write_to_file)
-    monkeypatch.setattr(api_settings, "log_file_directory", str(tmp_path))
+    monkeypatch.setattr(api_settings, "log_file_directory", tmp_path)
 
-    resp = api_client.post("/", json={"foo": "bar"})
+    endpoint = str(uuid4())
+    path = f"/{endpoint}"
+
+    resp = api_client.post(path, json={"foo": "bar"})
 
     assert resp.is_success
 
@@ -177,12 +180,14 @@ async def test_request_data_is_output_to_console_and_file(
             "user-agent": "testclient",
         },
         "method": "POST",
-        "path": "/",
+        "path": path,
     }
 
-    assert json.dumps(expected_response, indent=2, sort_keys=True) in capsys.readouterr().out
+    assert f"POST {path}" in caplog.text
+    assert json.dumps(expected_response, indent=2, sort_keys=True) in caplog.text
 
-    expected_file = tmp_path / f"{datetime.now().isoformat()}.json"
+    expected_file_name = f"{datetime.now().isoformat()}-POST--{endpoint}.json"
+    expected_file = tmp_path / expected_file_name
     if should_write_to_file:
         assert expected_file.exists()
         file_data = json.loads(expected_file.read_text())
