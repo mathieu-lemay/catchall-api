@@ -2,5 +2,7 @@ services:
   api:
     build: ".."
     image: "catchall-api:dev"
+    environment:
+      UVICORN_NO_ACCESS_LOG: 1
     ports:
       - 8080

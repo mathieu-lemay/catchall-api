@@ -26,7 +26,7 @@ def api_service_url(api_service_host: str, docker_services: Services) -> str:
         else:
             return True
 
-    docker_services.wait_until_responsive(timeout=30.0, pause=0.5, check=_check)
+    docker_services.wait_until_responsive(timeout=10.0, pause=0.5, check=_check)
     return url
 
 
