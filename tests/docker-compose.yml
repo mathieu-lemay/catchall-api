@@ -2,5 +2,13 @@ services:
   api:
     build: ".."
     image: "catchall-api:dev"
+    environment:
+      CATCHALL_API_PORT: 8080
+      CATCHALL_API_LOG_TO_FILE: 1
+      CATCHALL_API_LOG_FILE_DIRECTORY: "/output"
+      UVICORN_NO_ACCESS_LOG: 1
+    volumes:
+      - "${LOG_FILE_DIRECTORY:-/tmp}:/output"
+    user: "${USER_ID:-65535}"
     ports:
       - 8080
