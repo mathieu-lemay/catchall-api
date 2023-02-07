@@ -1,12 +1,13 @@
 {
   "template": "git@github.com:mathieu-lemay/python-project-template.git",
-  "commit": "8cdb7cb837db9ea1cf8647e24c8818fbe5a3aff8",
+  "commit": "0c4ec357491a63554a7ce5586f677765110fe679",
   "checkout": null,
   "context": {
     "cookiecutter": {
       "project_slug": "catchall-api",
       "project_description": "Catchall API that echoes back requests",
       "module_name": "catchall_api",
+      "python_version": "^3.10",
       "license": "MIT",
       "_template": "git@github.com:mathieu-lemay/python-project-template.git"
     }
