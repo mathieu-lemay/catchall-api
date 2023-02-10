@@ -34,10 +34,12 @@ async def root(request: Request, path: str, settings: Settings = settings_depend
     request_data = {
         "method": request.method,
         "path": path,
+        "client": _get_client_info(request),
+        "url": _get_url_info(request),
         "headers": dict(request.headers),
     }
 
-    if query_params := await _get_query_params(request):
+    if query_params := _get_query_params(request):
         request_data["query_params"] = query_params
 
     if body := await _get_body(request):
@@ -48,7 +50,24 @@ async def root(request: Request, path: str, settings: Settings = settings_depend
     return request_data
 
 
-async def _get_query_params(request: Request) -> Optional[JsonDict]:
+def _get_client_info(request: Request) -> Optional[JsonDict]:
+    return {
+        "remote_ip": request.client.host if request.client else None,
+        "port": request.client.port if request.client else None,
+    }
+
+
+def _get_url_info(request: Request) -> Optional[JsonDict]:
+    url = request.url
+    return {
+        "scheme": url.scheme,
+        "hostname": url.hostname,
+        "port": url.port,
+        "path": url.path,
+    }
+
+
+def _get_query_params(request: Request) -> Optional[JsonDict]:
     if not request.query_params:
         return None
 

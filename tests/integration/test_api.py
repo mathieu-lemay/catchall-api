@@ -68,6 +68,13 @@ async def test_empty_get_returns_basic_data(api_client: TestClient, path: str, e
     assert resp.json() == {
         "method": "GET",
         "path": expected_path,
+        "client": {"remote_ip": "testclient", "port": 50000},
+        "url": {
+            "scheme": "http",
+            "hostname": "testserver",
+            "port": None,
+            "path": expected_path,
+        },
         "headers": {
             "accept": "*/*",
             "accept-encoding": "gzip, deflate",
@@ -170,6 +177,7 @@ async def test_request_data_is_output_to_console_and_file(
 
     expected_response = {
         "body": {"json": {"foo": "bar"}, "raw": "eyJmb28iOiAiYmFyIn0="},
+        "client": {"remote_ip": "testclient", "port": 50000},
         "headers": {
             "accept": "*/*",
             "accept-encoding": "gzip, deflate",
@@ -181,6 +189,12 @@ async def test_request_data_is_output_to_console_and_file(
         },
         "method": "POST",
         "path": path,
+        "url": {
+            "scheme": "http",
+            "hostname": "testserver",
+            "port": None,
+            "path": path,
+        },
     }
 
     assert f"POST {path}" in caplog.text

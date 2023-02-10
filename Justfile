@@ -1,5 +1,4 @@
-DOCKER_IMAGE := "catchall-api"
-DOCKER_TAG := "dev"
+DOCKER_IMAGE := "acidrain/catchall-api"
 
 run:
     poetry run ./entrypoint.sh --reload
@@ -17,7 +16,13 @@ test:
         --cov-report term-missing --cov-fail-under=100
 
 docker-build:
-    docker build --tag "{{ DOCKER_IMAGE }}:{{ DOCKER_TAG }}" .
+    docker build --tag "{{ DOCKER_IMAGE }}:$(git describe --always HEAD)" .
+
+docker-push: docker-build
+    docker push "{{ DOCKER_IMAGE }}:$(git describe --always HEAD)"
+
+@docker-tag:
+    git describe --always HEAD
 
 _poetry_lock:
     poetry update --lock
