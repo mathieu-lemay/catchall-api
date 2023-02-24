@@ -1,11 +1,11 @@
 import base64
 import json
 import logging
-from collections import Counter
 from datetime import datetime
 from json import JSONDecodeError
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import parse_qs, urlparse
 
 from fastapi import Depends, FastAPI, Request
 
@@ -68,15 +68,9 @@ def _get_url_info(request: Request) -> Optional[JsonDict]:
 
 
 def _get_query_params(request: Request) -> Optional[JsonDict]:
-    if not request.query_params:
-        return None
+    *_, query, _ = urlparse(str(request.url))
 
-    param_keys = Counter([i[0] for i in request.query_params.multi_items()])
-
-    return {
-        key: request.query_params.get(key) if count == 1 else request.query_params.getlist(key)
-        for key, count in param_keys.items()
-    }
+    return {k: v if len(v) > 1 else v[0] for k, v in parse_qs(query).items()}
 
 
 async def _get_body(request: Request) -> Optional[JsonDict]:
