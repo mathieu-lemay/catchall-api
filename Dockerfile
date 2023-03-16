@@ -1,4 +1,4 @@
-FROM acidrain/python-poetry:3.10-alpine as builder
+FROM acidrain/python-poetry:3.11-alpine as builder
 ENV POETRY_NO_INTERACTION=true \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
     PYTHONDONTWRITEBYTECODE=nopyc
@@ -12,7 +12,7 @@ RUN set -eu; \
     poetry install --no-root --without dev;
 
 
-FROM python:3.10-alpine
+FROM python:3.11-alpine
 
 ENV PYTHONUNBUFFERED=true \
     PATH="/app/.venv/bin:${PATH}"
