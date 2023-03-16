@@ -41,7 +41,7 @@ minversion = "6.0"
 # Disable anyio to avoid conflict and force asyncio to load before entrypoints
 # https://docs.pytest.org/en/6.2.x/writing_plugins.html#plugin-discovery-order-at-tool-startup
 addopts = ["-p", "no:anyio", "-p", "asyncio"]
-testpaths = ["tests"]
+testpaths = ["tests/unit", "tests/integration", "tests/module", "tests"]
 asyncio_mode = "auto"
 
 [build-system]
