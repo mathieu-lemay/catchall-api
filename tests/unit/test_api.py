@@ -1,8 +1,10 @@
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 from _pytest.monkeypatch import MonkeyPatch
 
 from catchall_api import Settings
+from catchall_api.api import main
 
 
 def test_settings(monkeypatch: MonkeyPatch) -> None:
@@ -33,3 +35,18 @@ def test_settings_default_values() -> None:
     assert settings.log_no_color is None
     assert settings.log_to_file is False
     assert settings.log_file_directory == Path("/output")
+
+
+@patch("uvicorn.run")
+def test_main(uvicorn_run_mock: Mock) -> None:
+    main()
+
+    uvicorn_run_mock.assert_called_once_with(
+        "catchall_api.api:create_app",
+        factory=True,
+        reload=True,
+        host="0.0.0.0",  # noqa: S104: Possible binding to all interfaces
+        port=8080,
+        access_log=False,
+        log_level="warning",
+    )

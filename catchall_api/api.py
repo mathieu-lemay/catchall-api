@@ -114,3 +114,17 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
     configure_loggers(settings)
 
     return app
+
+
+def main() -> None:
+    import uvicorn
+
+    uvicorn.run(
+        "catchall_api.api:create_app",
+        factory=True,
+        reload=True,
+        host="0.0.0.0",  # noqa: S104: Possible binding to all interfaces
+        port=8080,
+        access_log=False,
+        log_level="warning",
+    )
