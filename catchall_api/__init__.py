@@ -12,9 +12,6 @@ class Settings(BaseSettings):
     log_to_file: bool = False
     log_file_directory: Path = Path("/output")
 
-    uvicorn_log_level: str = Field(default="INFO", env="UVICORN_LOG_LEVEL")
-    uvicorn_no_access_log: bool = Field(default=False, env="UVICORN_NO_ACCESS_LOG")
-
     class Config:
         env_file = ".env"
         env_prefix = "CATCHALL_API_"

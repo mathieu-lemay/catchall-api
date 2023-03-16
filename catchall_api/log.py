@@ -6,8 +6,6 @@ from . import Settings, __project_name__
 
 def get_logging_config(settings: Settings) -> dict[str, Any]:
     log_level = settings.log_level.upper()
-    uvicorn_log_level = settings.uvicorn_log_level.upper()
-    uvicorn_access_handlers = ["default"] if not settings.uvicorn_no_access_log else []
 
     if settings.log_no_color:
         log_format = "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s"
@@ -21,8 +19,6 @@ def get_logging_config(settings: Settings) -> dict[str, Any]:
         "disable_existing_loggers": False,
         "loggers": {
             __project_name__: {"handlers": ["default"], "level": log_level},
-            "uvicorn": {"handlers": ["default"], "level": uvicorn_log_level},
-            "uvicorn.access": {"handlers": uvicorn_access_handlers, "level": uvicorn_log_level},
         },
         "handlers": {
             "default": {
