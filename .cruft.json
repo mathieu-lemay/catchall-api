@@ -1,6 +1,6 @@
 {
   "template": "git@github.com:mathieu-lemay/python-project-template.git",
-  "commit": "178a02afdfd7f03345dd58f6c1b3863f4eff4ae4",
+  "commit": "9580579b6b28fd085af3f6701eb902e790a10da6",
   "checkout": null,
   "context": {
     "cookiecutter": {
