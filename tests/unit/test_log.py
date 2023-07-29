@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import pytest
 
@@ -60,14 +60,19 @@ def test_get_log_config_sets_log_level(log_level: str) -> None:
             {
                 "default": {
                     "()": "coloredlogs.BasicFormatter",
-                    "format": "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s: %(message)s",
+                    "format": (
+                        "%(asctime)s.%(msecs)03d [%(levelname)-8s] "
+                        "%(name)s: %(message)s"
+                    ),
                     "datefmt": "%Y-%m-%d %H:%M:%S",
                 }
             },
         ),
     ],
 )
-def test_get_log_config_uses_color_if_requested(no_color: Optional[str], expected: dict[str, Any]) -> None:
+def test_get_log_config_uses_color_if_requested(
+    no_color: str | None, expected: dict[str, Any]
+) -> None:
     settings = Settings(log_no_color=no_color)
 
     log_config = get_logging_config(settings)

@@ -1,7 +1,6 @@
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Union
 from uuid import uuid4
 
 import pytest
@@ -61,7 +60,9 @@ async def test_all_methods_are_supported(api_client: TestClient, method: str) ->
         ("/api/foobar", "/api/foobar"),
     ],
 )
-async def test_empty_get_returns_basic_data(api_client: TestClient, path: str, expected_path: str) -> None:
+async def test_empty_get_returns_basic_data(
+    api_client: TestClient, path: str, expected_path: str
+) -> None:
     resp = api_client.get(path)
 
     assert resp.is_success
@@ -112,7 +113,12 @@ async def test_query_with_query_params(api_client: TestClient) -> None:
         "str-list": ["aaa", "bbb"],
         "int-list": [1, 2, 3],
     }
-    expected = {"str-val": "foo", "int-val": "123", "str-list": ["aaa", "bbb"], "int-list": ["1", "2", "3"]}
+    expected = {
+        "str-val": "foo",
+        "int-val": "123",
+        "str-list": ["aaa", "bbb"],
+        "int-list": ["1", "2", "3"],
+    }
 
     resp = api_client.get("/", params=query_params)
 
@@ -120,7 +126,9 @@ async def test_query_with_query_params(api_client: TestClient) -> None:
     assert resp.json()["query_params"] == expected
 
 
-async def test_json_body_is_returned_in_a_dict_and_as_base64(api_client: TestClient) -> None:
+async def test_json_body_is_returned_in_a_dict_and_as_base64(
+    api_client: TestClient,
+) -> None:
     resp = api_client.post("/", json={"foo": "bar"})
     assert resp.is_success
     assert resp.json()["body"] == {
@@ -141,14 +149,16 @@ async def test_json_body_is_returned_in_a_dict_and_as_base64(api_client: TestCli
     ],
 )
 async def test_non_json_body_is_returned_as_base64(
-    api_client: TestClient, data: Union[str, bytes], expected: str
+    api_client: TestClient, data: str | bytes, expected: str
 ) -> None:
     resp = api_client.post("/", content=data)
     assert resp.is_success
     assert resp.json()["body"] == {"raw": expected}
 
 
-async def test_empty_body_with_bogus_content_length_is_not_returned(api_client: TestClient) -> None:
+async def test_empty_body_with_bogus_content_length_is_not_returned(
+    api_client: TestClient,
+) -> None:
     resp = api_client.post("/", headers={"Content-Length": "255"})
 
     assert resp.is_success
@@ -156,7 +166,7 @@ async def test_empty_body_with_bogus_content_length_is_not_returned(api_client: 
 
 
 @pytest.mark.parametrize("should_write_to_file", [True, False])
-@time_machine.travel(datetime(2023, 1, 1, 0, 0, 0), tick=False)
+@time_machine.travel(datetime(2023, 1, 1, 0, 0, 0, tzinfo=UTC), tick=False)
 async def test_request_data_is_output_to_console_and_file(
     api_settings: Settings,
     api_client: TestClient,
@@ -200,7 +210,8 @@ async def test_request_data_is_output_to_console_and_file(
     assert f"POST {path}" in caplog.text
     assert json.dumps(expected_response, indent=2, sort_keys=True) in caplog.text
 
-    expected_file_name = f"{datetime.utcnow().isoformat()}-POST--{endpoint}.json"
+    timestamp = datetime.now(tz=UTC).replace(tzinfo=None)
+    expected_file_name = f"{timestamp.isoformat()}-POST--{endpoint}.json"
     expected_file = tmp_path / expected_file_name
     if should_write_to_file:
         assert expected_file.exists()

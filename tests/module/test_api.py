@@ -1,6 +1,6 @@
-from datetime import datetime
+from collections.abc import AsyncGenerator
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import AsyncGenerator
 from uuid import uuid4
 
 import httpx
@@ -67,11 +67,11 @@ async def test_all_headers_are_returned(
     data = b"abc123"
 
     log_files = set(log_file_directory.glob("*.json"))
-    ts_start = datetime.utcnow()
+    ts_start = datetime.now(tz=UTC).replace(tzinfo=None)
 
     resp = await api_client.post("/", headers=headers, content=data)
 
-    ts_end = datetime.utcnow()
+    ts_end = datetime.now(tz=UTC).replace(tzinfo=None)
 
     assert resp.is_success
     assert resp.json()["headers"] == {
