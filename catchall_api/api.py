@@ -88,7 +88,7 @@ async def _get_body(request: Request) -> Optional[JsonDict]:
         json_body = await request.json()
         body["json"] = json_body
     except (JSONDecodeError, UnicodeDecodeError):
-        pass  # noqa: S110: `try`-`except`-`pass` detected
+        pass
 
     return body
 

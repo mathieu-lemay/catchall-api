@@ -10,9 +10,9 @@ include = ["catchall_api/py.typed"]
 [tool.poetry.dependencies]
 python = "^3.11"
 pydantic = { version = "^1.10.2", extras = ["dotenv"] }
-fastapi = "^0.92.0"
+fastapi = "^0.100.1"
 coloredlogs = "^15.0.1"
-uvicorn = "^0.21.0"
+uvicorn = "^0.23.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.3.1"
@@ -90,7 +90,7 @@ select = [
 
 [tool.ruff.pep8-naming]
 classmethod-decorators = [
-    "pydantic.classmethod",
+    "classmethod",
     "pydantic.validator",
     "pydantic.root_validator",
 ]
