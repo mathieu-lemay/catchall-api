@@ -27,6 +27,9 @@ time-machine = "^2.9.0"
 [tool.poetry.scripts]
 catchall-api = "catchall_api.api:main"
 
+[tool.black]
+preview = true
+
 [tool.isort]
 profile = "black"
 

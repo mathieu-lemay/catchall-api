@@ -61,8 +61,8 @@ def test_get_log_config_sets_log_level(log_level: str) -> None:
                 "default": {
                     "()": "coloredlogs.BasicFormatter",
                     "format": (
-                        "%(asctime)s.%(msecs)03d [%(levelname)-8s] "
-                        "%(name)s: %(message)s"
+                        "%(asctime)s.%(msecs)03d [%(levelname)-8s] %(name)s:"
+                        " %(message)s"
                     ),
                     "datefmt": "%Y-%m-%d %H:%M:%S",
                 }
